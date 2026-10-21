@@ -8,7 +8,7 @@ macOS · Obsidian 1.14+ · Python 3.9+ · Git
 
 [KOREAN](README.ko.md)
 
-## Install all
+## Install
 
 Terminal + Git + Reader Highlighter Tags + all saved shortcuts:
 
@@ -16,7 +16,7 @@ Terminal + Git + Reader Highlighter Tags + all saved shortcuts:
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 -
 ```
 
-## Terminal
+### Terminal
 
 [Terminal 3.29.0](https://github.com/polyipseity/obsidian-terminal) with the saved settings and macOS integrated zsh profile.
 
@@ -26,7 +26,7 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 
 Shortcuts: **Option + T** or **Cmd + Shift + H** to open, **Option + F** to find, **Option + W** to close.
 
-## Git
+### Git
 
 [Git 2.42.0](https://github.com/Vinzent03/obsidian-git) with the saved automatic commit-and-sync settings. Git, your vault's repository, remote and authentication must already be configured.
 
@@ -34,7 +34,7 @@ Shortcuts: **Option + T** or **Cmd + Shift + H** to open, **Option + F** to find
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only git
 ```
 
-## Reader Highlighter Tags
+### Reader Highlighter Tags
 
 [Reader Highlighter Tags 2.0.0](https://github.com/DuckTapeKiller/obsidian-reader-highlighter-tags), using the current default settings.
 
@@ -44,7 +44,7 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 
 Reading view shortcuts: **Ctrl + 1** red, **Ctrl + Q** yellow, **Ctrl + A** green, **Ctrl + Z** purple.
 
-## Highlight shortcuts
+### Highlight shortcuts
 
 The original [Basic Color Highlighter](https://github.com/owjxyz/Basic-Color-Highlighter) command:
 
