@@ -1,5 +1,3 @@
-[KOREAN](README.ko.md)
-
 # Obsidian Vault Init
 
 Install the latest stable Terminal, Git and Superier Highlighter releases with saved personal settings and shortcuts.
@@ -7,6 +5,8 @@ Install the latest stable Terminal, Git and Superier Highlighter releases with s
 macOS · Obsidian · Python 3.9+ · Git
 
 **Quit Obsidian and run from your vault folder. Reopen Obsidian afterward.** Allow community plugins if prompted.
+
+[KOREAN](README.ko.md)
 
 ## Install
 
