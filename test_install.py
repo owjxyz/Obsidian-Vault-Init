@@ -15,6 +15,7 @@ def fixture_download(url):
     for repo, plugin, version in [
         ("polyipseity/obsidian-terminal", "terminal", "3.29.0"),
         ("Vinzent03/obsidian-git", "obsidian-git", "2.42.0"),
+        ("DuckTapeKiller/obsidian-reader-highlighter-tags", "reader-highlighter-tags", "2.0.0"),
     ]:
         prefix = f"https://github.com/{repo}/releases/download/{version}/"
         if url.startswith(prefix):
@@ -44,7 +45,7 @@ with TemporaryDirectory() as folder:
     backup = setup.install(vault)
     assert backup and (backup / "hotkeys.json").read_bytes() == original
     assert json.loads((config / "community-plugins.json").read_text()) == [
-        "other-plugin", "terminal", "obsidian-git"
+        "other-plugin", "terminal", "obsidian-git", "reader-highlighter-tags"
     ]
     assert json.loads((config / "plugins/terminal/data.json").read_text())["defaultProfile"] == "darwinIntegratedDefault"
     git_settings = json.loads((config / "plugins/obsidian-git/data.json").read_text())
@@ -53,18 +54,33 @@ with TemporaryDirectory() as folder:
     assert keys["app:open-settings"] == [{"modifiers": ["Mod"], "key": ","}]
     for color, key in [("red", "1"), ("orange", "2"), ("yellow", "Q"), ("green", "A"), ("blue", "S"), ("purple", "Z")]:
         assert keys[f"editor:toggle-highlight-{color}"] == [{"modifiers": ["Alt"], "key": key}]
+    for color, key in [(1, "1"), (3, "Q"), (4, "A"), (6, "Z")]:
+        assert keys[f"reader-highlighter-tags:apply-color-{color}"] == [{"modifiers": ["Ctrl"], "key": key}]
+    assert keys["terminal:find-in-terminal"] == [{"modifiers": ["Alt"], "key": "F"}]
+    assert keys["terminal:close-terminal"] == [{"modifiers": ["Alt"], "key": "W"}]
+    assert keys["terminal:open-terminal.integrated.root"] == [
+        {"key": "H", "modifiers": ["Mod", "Shift"]},
+        {"modifiers": ["Alt"], "key": "T"},
+    ]
+    assert json.loads((config / "plugins/reader-highlighter-tags/data.json").read_text()) == {}
     assert (vault / "note.md").read_text() == "Do not touch this note."
     before = snapshot(vault)
     assert setup.install(vault) is None
     assert snapshot(vault) == before
 
-    for only, wanted, unwanted in [("terminal", "terminal", "obsidian-git"), ("git", "obsidian-git", "terminal")]:
+    for only, wanted, unwanted in [("terminal", "terminal", "obsidian-git"), ("git", "obsidian-git", "terminal"),
+                                  ("reader", "reader-highlighter-tags", "terminal")]:
         single = root / only
         (single / ".obsidian").mkdir(parents=True)
         setup.install(single, only=only)
         assert (single / ".obsidian/plugins" / wanted / "main.js").is_file()
         assert not (single / ".obsidian/plugins" / unwanted).exists()
-        assert not (single / ".obsidian/hotkeys.json").exists()
+        if only == "git":
+            assert not (single / ".obsidian/hotkeys.json").exists()
+        else:
+            scoped = json.loads((single / ".obsidian/hotkeys.json").read_text())
+            assert all(command.startswith(wanted + ":") for command in scoped)
+            assert len(scoped) == (3 if only == "terminal" else 4)
 
     # Bad settings, conflicts and download errors must not make partial installs.
     failing = root / "failing"
@@ -92,6 +108,24 @@ with TemporaryDirectory() as folder:
     assert snapshot(failing) == before
     setup.install(failing, replace_conflicts=True)
     assert json.loads((failing_config / "hotkeys.json").read_text())["other"] == []
+
+    # Collision checks must cover Terminal and Reader modifiers, not just Alt+colors.
+    for only, modifier, key in [("terminal", "Alt", "W"), ("reader", "Ctrl", "Q")]:
+        (failing_config / "hotkeys.json").write_text(json.dumps({
+            "unrelated": [{"modifiers": [modifier], "key": key}, {"modifiers": ["Shift"], "key": "X"}]
+        }))
+        before = snapshot(failing)
+        try:
+            setup.install(failing, only=only)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError(f"{only} shortcut conflict was accepted.")
+        assert snapshot(failing) == before
+        setup.install(failing, only=only, replace_conflicts=True)
+        assert json.loads((failing_config / "hotkeys.json").read_text())["unrelated"] == [
+            {"modifiers": ["Shift"], "key": "X"}
+        ]
 
     def failed_download(url):
         raise OSError("Simulated download failure")
