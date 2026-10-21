@@ -1,5 +1,3 @@
-[ENGLISH](README.md)
-
 # Obsidian Vault Init
 
 Terminal·Git·Superier Highlighter의 최신 정식 릴리스와 저장된 개인 설정·단축키를 한 줄로 적용합니다.
@@ -7,6 +5,8 @@ Terminal·Git·Superier Highlighter의 최신 정식 릴리스와 저장된 개�
 macOS · Obsidian · Python 3.9 이상 · Git
 
 **Obsidian을 종료하고 대상 vault 폴더에서 실행한 뒤, Obsidian을 다시 여세요.** 커뮤니티 플러그인 허용 안내가 나오면 허용합니다.
+
+[ENGLISH](README.md)
 
 ## 설치
 
