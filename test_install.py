@@ -11,13 +11,19 @@ setup = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(setup)
 
 
+latest_version = "9.8.7"
+
 def fixture_download(url):
     for repo, plugin, version in [
-        ("polyipseity/obsidian-terminal", "terminal", "3.29.0"),
-        ("Vinzent03/obsidian-git", "obsidian-git", "2.42.0"),
-        ("DuckTapeKiller/obsidian-reader-highlighter-tags", "reader-highlighter-tags", "2.0.0"),
+        ("polyipseity/obsidian-terminal", "terminal", latest_version),
+        ("Vinzent03/obsidian-git", "obsidian-git", latest_version),
+        ("owjxyz/Obsidian-Superier-Highlighter", "superier-highlighter", latest_version),
     ]:
-        prefix = f"https://github.com/{repo}/releases/download/{version}/"
+        if url == f"https://api.github.com/repos/{repo}/releases/latest":
+            return json.dumps({"tag_name": "v" + version, "assets": [
+                {"name": name} for name in ["manifest.json", "main.js", "styles.css"]
+            ]}).encode()
+        prefix = f"https://github.com/{repo}/releases/download/v{version}/"
         if url.startswith(prefix):
             name = url[len(prefix):]
             if name == "manifest.json":
@@ -45,31 +51,36 @@ with TemporaryDirectory() as folder:
     backup = setup.install(vault)
     assert backup and (backup / "hotkeys.json").read_bytes() == original
     assert json.loads((config / "community-plugins.json").read_text()) == [
-        "other-plugin", "terminal", "obsidian-git", "reader-highlighter-tags"
+        "other-plugin", "terminal", "obsidian-git", "superier-highlighter"
     ]
     assert json.loads((config / "plugins/terminal/data.json").read_text())["defaultProfile"] == "darwinIntegratedDefault"
     git_settings = json.loads((config / "plugins/obsidian-git/data.json").read_text())
     assert (git_settings["autoSaveInterval"], git_settings["autoPushInterval"], git_settings["autoPullInterval"]) == (10, 60, 60)
     keys = json.loads((config / "hotkeys.json").read_text())
     assert keys["app:open-settings"] == [{"modifiers": ["Mod"], "key": ","}]
-    for color, key in [("red", "1"), ("orange", "2"), ("yellow", "Q"), ("green", "A"), ("blue", "S"), ("purple", "Z")]:
+    for color, key in [("red", "A"), ("orange", "D"), ("yellow", "S"), ("green", "Z"), ("blue", "C"), ("purple", "X")]:
         assert keys[f"editor:toggle-highlight-{color}"] == [{"modifiers": ["Alt"], "key": key}]
-    for color, key in [(1, "1"), (3, "Q"), (4, "A"), (6, "Z")]:
-        assert keys[f"reader-highlighter-tags:apply-color-{color}"] == [{"modifiers": ["Ctrl"], "key": key}]
+    for color, key in [(1, "A"), (2, "D"), (3, "S"), (4, "Z"), (5, "C"), (6, "X")]:
+        assert keys[f"superier-highlighter:apply-color-{color}"] == [{"modifiers": ["Ctrl"], "key": key}]
     assert keys["terminal:find-in-terminal"] == [{"modifiers": ["Alt"], "key": "F"}]
     assert keys["terminal:close-terminal"] == [{"modifiers": ["Alt"], "key": "W"}]
     assert keys["terminal:open-terminal.integrated.root"] == [
         {"key": "H", "modifiers": ["Mod", "Shift"]},
         {"modifiers": ["Alt"], "key": "T"},
     ]
-    assert json.loads((config / "plugins/reader-highlighter-tags/data.json").read_text()) == {}
+    assert json.loads((config / "plugins/superier-highlighter/data.json").read_text()) == {}
     assert (vault / "note.md").read_text() == "Do not touch this note."
     before = snapshot(vault)
     assert setup.install(vault) is None
     assert snapshot(vault) == before
 
+    latest_version = "9.8.8"
+    setup.install(vault)
+    assert json.loads((config / "plugins/terminal/manifest.json").read_text())["version"] == latest_version
+    assert json.loads((config / "plugins/superier-highlighter/manifest.json").read_text())["version"] == latest_version
+
     for only, wanted, unwanted in [("terminal", "terminal", "obsidian-git"), ("git", "obsidian-git", "terminal"),
-                                  ("reader", "reader-highlighter-tags", "terminal")]:
+                                  ("highlighter", "superier-highlighter", "terminal")]:
         single = root / only
         (single / ".obsidian").mkdir(parents=True)
         setup.install(single, only=only)
@@ -79,8 +90,38 @@ with TemporaryDirectory() as folder:
             assert not (single / ".obsidian/hotkeys.json").exists()
         else:
             scoped = json.loads((single / ".obsidian/hotkeys.json").read_text())
-            assert all(command.startswith(wanted + ":") for command in scoped)
-            assert len(scoped) == (3 if only == "terminal" else 4)
+            assert all(command.startswith((wanted + ":", "editor:toggle-highlight")) for command in scoped)
+            assert len(scoped) == (3 if only == "terminal" else 14)
+
+    shortcuts = root / "shortcuts"
+    (shortcuts / ".obsidian").mkdir(parents=True)
+    def no_download(url):
+        raise AssertionError("Shortcut-only setup must not download plugins")
+    setup.download = no_download
+    setup.install(shortcuts, only="shortcuts")
+    assert not (shortcuts / ".obsidian/plugins").exists()
+    assert not (shortcuts / ".obsidian/community-plugins.json").exists()
+    saved = json.loads((shortcuts / ".obsidian/hotkeys.json").read_text())
+    assert saved["superier-highlighter:apply-color-5"] == [{"modifiers": ["Ctrl"], "key": "C"}]
+    assert saved["superier-highlighter:apply-color-2"] == [{"modifiers": ["Ctrl"], "key": "D"}]
+    assert saved["superier-highlighter:remove-highlight"] == [{"modifiers": ["Ctrl"], "key": "Q"}]
+    assert saved["editor:toggle-highlight"] == [{"modifiers": ["Alt"], "key": "Q"}]
+    setup.download = fixture_download
+
+    # Retiring the old plugin also retires its shortcut bindings, preserving other settings.
+    migration = root / "migration"
+    migration_config = migration / ".obsidian"
+    migration_config.mkdir(parents=True)
+    (migration_config / "community-plugins.json").write_text('["other", "reader-highlighter-tags"]')
+    (migration_config / "hotkeys.json").write_text(json.dumps({
+        "reader-highlighter-tags:apply-color-1": [{"modifiers": ["Ctrl"], "key": "A"}],
+        "other:command": [{"modifiers": ["Shift"], "key": "Y"}]
+    }))
+    setup.install(migration, only="reader")
+    assert json.loads((migration_config / "community-plugins.json").read_text()) == ["other", "superier-highlighter"]
+    migrated = json.loads((migration_config / "hotkeys.json").read_text())
+    assert not any(command.startswith("reader-highlighter-tags:") for command in migrated)
+    assert "other:command" in migrated
 
     # Bad settings, conflicts and download errors must not make partial installs.
     failing = root / "failing"
@@ -97,7 +138,7 @@ with TemporaryDirectory() as folder:
             raise AssertionError("Invalid community plugin list was accepted.")
         assert snapshot(failing) == before
     (failing_config / "community-plugins.json").write_text("[]")
-    (failing_config / "hotkeys.json").write_text('{"other":[{"modifiers":["Alt"],"key":"1"}]}')
+    (failing_config / "hotkeys.json").write_text('{"other":[{"modifiers":["Alt"],"key":"A"}]}')
     before = snapshot(failing)
     try:
         setup.install(failing)
@@ -110,7 +151,7 @@ with TemporaryDirectory() as folder:
     assert json.loads((failing_config / "hotkeys.json").read_text())["other"] == []
 
     # Collision checks must cover Terminal and Reader modifiers, not just Alt+colors.
-    for only, modifier, key in [("terminal", "Alt", "W"), ("reader", "Ctrl", "Q")]:
+    for only, modifier, key in [("terminal", "Alt", "W"), ("highlighter", "Ctrl", "Q")]:
         (failing_config / "hotkeys.json").write_text(json.dumps({
             "unrelated": [{"modifiers": [modifier], "key": key}, {"modifiers": ["Shift"], "key": "X"}]
         }))
@@ -126,6 +167,31 @@ with TemporaryDirectory() as folder:
         assert json.loads((failing_config / "hotkeys.json").read_text())["unrelated"] == [
             {"modifiers": ["Shift"], "key": "X"}
         ]
+
+    # Latest-release metadata, manifests and asset digests must fail before writes.
+    for problem in ["preview", "missing", "manifest", "digest"]:
+        def invalid_download(url):
+            content = fixture_download(url)
+            if url.endswith("/releases/latest"):
+                release = json.loads(content)
+                if problem == "preview":
+                    release["prerelease"] = True
+                elif problem == "missing":
+                    release["assets"] = []
+                elif problem == "digest":
+                    release["assets"][0]["digest"] = "sha256:" + "0" * 64
+                return json.dumps(release).encode()
+            if problem == "manifest" and url.endswith("manifest.json"):
+                return b'{"id":"wrong","version":"9.8.8"}'
+            return content
+        setup.download = invalid_download
+        before = snapshot(failing)
+        try:
+            setup.install(failing, only="git")
+            raise AssertionError(f"Accepted invalid release: {problem}")
+        except ValueError:
+            pass
+        assert snapshot(failing) == before
 
     def failed_download(url):
         raise OSError("Simulated download failure")

@@ -1,22 +1,26 @@
+[ENGLISH](README.md)
+
 # Obsidian Vault Init
 
-현재 사용하는 Terminal·Git·Reader Highlighter Tags 설정과 단축키를 한 줄로 적용합니다.
+Terminal·Git·Superier Highlighter의 최신 정식 릴리스와 저장된 개인 설정·단축키를 한 줄로 적용합니다.
 
-macOS · Obsidian 1.14 이상 · Python 3.9 이상 · Git
+macOS · Obsidian · Python 3.9 이상 · Git
 
 **Obsidian을 종료하고 대상 vault 폴더에서 실행한 뒤, Obsidian을 다시 여세요.** 커뮤니티 플러그인 허용 안내가 나오면 허용합니다.
 
-## Install
+## 설치
 
-Terminal + Git + Reader Highlighter Tags + 저장된 모든 단축키:
+Terminal + Git + Superier Highlighter + 저장된 모든 단축키:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 -
 ```
 
+플러그인을 설치할 때마다 GitHub의 최신 정식 릴리스를 조회하며 시험 배포는 제외합니다. 스크립트를 실행할 때 업데이트하며 상시 자동 업데이트는 등록하지 않습니다. 모든 파일을 내려받고 배포 정보와 제공되는 GitHub 체크섬을 검증한 뒤 보관함을 변경합니다. 조회나 다운로드에 실패하면 보관함을 변경하지 않습니다.
+
 ### Terminal
 
-[Terminal 3.29.0](https://github.com/polyipseity/obsidian-terminal)과 저장된 설정, macOS 내장 zsh 프로필을 적용합니다.
+[Terminal](https://github.com/polyipseity/obsidian-terminal)과 저장된 설정, macOS 내장 zsh 프로필을 적용합니다.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only terminal
@@ -26,45 +30,46 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 
 ### Git
 
-[Git 2.42.0](https://github.com/Vinzent03/obsidian-git)과 저장된 자동 커밋·동기화 설정을 적용합니다. Git 설치, vault의 Git 저장소·원격 주소·인증은 미리 설정되어 있어야 합니다.
+[Git](https://github.com/Vinzent03/obsidian-git)과 저장된 자동 커밋·동기화 설정을 적용합니다. Git 설치, vault의 Git 저장소·원격 주소·인증은 미리 설정되어 있어야 합니다.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only git
 ```
 
-### Reader Highlighter Tags
+### Superier Highlighter
 
-[Reader Highlighter Tags 2.0.0](https://github.com/DuckTapeKiller/obsidian-reader-highlighter-tags)과 현재 사용 중인 기본 설정을 적용합니다.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only reader
-```
-
-읽기 보기 단축키: 빨강 **Ctrl + 1**, 노랑 **Ctrl + Q**, 초록 **Ctrl + A**, 보라 **Ctrl + Z**.
-
-### 하이라이트 단축키
-
-기존 [Basic Color Highlighter](https://github.com/owjxyz/Basic-Color-Highlighter) 명령입니다.
+[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter)의 기본 플러그인 설정과 아래의 읽기·편집 단축키를 적용합니다. 기존 Reader Highlighter Tags는 활성화 목록에서 제외하고 해당 단축키를 정리하며 파일은 보존합니다. 이전 `--only reader` 옵션도 같은 동작으로 유지합니다.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/owjxyz/Basic-Color-Highlighter/main/apply.py | python3 -
+curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only highlighter
 ```
 
-| 색상 | macOS | Windows / Linux | 저장되는 형식 |
-| --- | --- | --- | --- |
-| 빨강 | Option + 1 | Alt + 1 | `==🔴텍스트==` |
-| 주황 | Option + 2 | Alt + 2 | `==🟠텍스트==` |
-| 노랑 | Option + Q | Alt + Q | `==🟡텍스트==` |
-| 초록 | Option + A | Alt + A | `==🟢텍스트==` |
-| 파랑 | Option + S | Alt + S | `==🔵텍스트==` |
-| 보라 | Option + Z | Alt + Z | `==🟣텍스트==` |
+### 개인 단축키만 적용
 
-텍스트를 선택하고 해당 단축키를 누릅니다.
+플러그인을 다운로드하거나 활성화하지 않고 Terminal을 포함한 모든 개인 단축키를 적용합니다.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only shortcuts
+```
+
+| 색상 / 동작                      | 편집 보기  | 읽기 보기 (Superier Highlighter) |
+| -------------------------------- | ---------- | -------------------------------- |
+| 빨강                             | Option + A | Ctrl + A                         |
+| 주황                             | Option + D | Ctrl + D                         |
+| 노랑                             | Option + S | Ctrl + S                         |
+| 초록                             | Option + Z | Ctrl + Z                         |
+| 파랑                             | Option + C | Ctrl + C                         |
+| 보라                             | Option + X | Ctrl + X                         |
+| 기본 강조 전환 / 하이라이트 제거 | Option + Q | Ctrl + Q                         |
+
+Windows / Linux에서는 Option 대신 Alt를 사용합니다. 편집 보기의 색상 명령에는 기존 Basic Color Highlighter 사용자 설정이 필요하며, 이 스크립트는 해당 단축키를 배정합니다. 읽기 보기 단축키는 Superier Highlighter에서 동작합니다. 읽기 보기의 색상 단축키를 다시 누르면 선택 범위를 포함하는 하이라이트와 색상 표시를 제거합니다.
+
+Superier Highlighter 단독 설치 명령은 단축키를 설정하지 않습니다. 개인 단축키는 이 저장소에서 관리합니다.
 
 ## 옵션
 
 - **다른 vault:** `python3 -` 뒤에 `"/대상/vault/경로"`를 추가합니다.
 - **단축키 충돌:** `--replace-conflicts`를 추가하면 충돌하는 기존 사용자 지정 키 배정을 해제합니다.
-- **백업:** 교체되는 파일은 `.obsidian/vault-setup-backups/`에 저장합니다. 기존 하이라이트 전용 명령의 백업은 `.obsidian/hotkeys.json.*.bak`입니다.
+- **백업:** 교체되는 파일은 `.obsidian/vault-setup-backups/`에 저장합니다.
 
-플러그인 설치 명령은 공식 배포본에서 위 버전을 내려받아 선택한 플러그인의 설정을 교체하고 활성화 목록에 추가합니다. 다른 플러그인과 노트는 보존합니다. 경로를 생략하면 현재 폴더에 적용하며, `.obsidian` 폴더가 있어야 합니다.
+플러그인을 설치하면 선택한 플러그인의 저장된 설정을 교체하고 활성화 목록에 추가합니다. 위의 기존 하이라이터 전환을 제외한 다른 플러그인과 노트는 보존합니다. 단축키만 적용하면 플러그인 파일과 활성화 상태를 보존합니다. 경로를 생략하면 현재 폴더에 적용하며, `.obsidian` 폴더가 있어야 합니다.

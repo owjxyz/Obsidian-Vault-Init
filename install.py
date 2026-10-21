@@ -8,6 +8,8 @@ from pathlib import Path
 import sys
 import tempfile
 import urllib.request
+from urllib.parse import quote
+import hashlib
 
 # Settings snapshots from the source vault; no plugin binaries or credentials.
 SETTINGS = json.loads(r'''{
@@ -383,87 +385,33 @@ SETTINGS = json.loads(r'''{
       "lastShownDateTimeFormatOptions": "date"
     }
   },
-  "reader-highlighter-tags": {}
+  "superier-highlighter": {}
 }''')
 PLUGINS = {
-    "terminal": ("polyipseity/obsidian-terminal", "3.29.0"),
-    "obsidian-git": ("Vinzent03/obsidian-git", "2.42.0"),
-    "reader-highlighter-tags": ("DuckTapeKiller/obsidian-reader-highlighter-tags", "2.0.0"),
+    "terminal": "polyipseity/obsidian-terminal",
+    "obsidian-git": "Vinzent03/obsidian-git",
+    "superier-highlighter": "owjxyz/Obsidian-Superier-Highlighter",
 }
-PLUGIN_HOTKEYS = json.loads(r'''{
-  "terminal": {
-    "terminal:find-in-terminal": [
-      {
-        "modifiers": [
-          "Alt"
+PLUGIN_HOTKEYS = {
+    "terminal": {
+        "terminal:find-in-terminal": [{"modifiers": ["Alt"], "key": "F"}],
+        "terminal:close-terminal": [{"modifiers": ["Alt"], "key": "W"}],
+        "terminal:open-terminal.integrated.root": [
+            {"key": "H", "modifiers": ["Mod", "Shift"]},
+            {"modifiers": ["Alt"], "key": "T"},
         ],
-        "key": "F"
-      }
-    ],
-    "terminal:close-terminal": [
-      {
-        "modifiers": [
-          "Alt"
-        ],
-        "key": "W"
-      }
-    ],
-    "terminal:open-terminal.integrated.root": [
-      {
-        "key": "H",
-        "modifiers": [
-          "Mod",
-          "Shift"
-        ]
-      },
-      {
-        "modifiers": [
-          "Alt"
-        ],
-        "key": "T"
-      }
-    ]
-  },
-  "reader-highlighter-tags": {
-    "reader-highlighter-tags:apply-color-1": [
-      {
-        "modifiers": [
-          "Ctrl"
-        ],
-        "key": "1"
-      }
-    ],
-    "reader-highlighter-tags:apply-color-3": [
-      {
-        "modifiers": [
-          "Ctrl"
-        ],
-        "key": "Q"
-      }
-    ],
-    "reader-highlighter-tags:apply-color-4": [
-      {
-        "modifiers": [
-          "Ctrl"
-        ],
-        "key": "A"
-      }
-    ],
-    "reader-highlighter-tags:apply-color-6": [
-      {
-        "modifiers": [
-          "Ctrl"
-        ],
-        "key": "Z"
-      }
-    ]
-  }
-}''')
+    },
+    "superier-highlighter": {
+        **{f"superier-highlighter:apply-color-{index}": [{"modifiers": ["Ctrl"], "key": key}]
+           for index, key in enumerate("ADSZCX", 1)},
+        "superier-highlighter:remove-highlight": [{"modifiers": ["Ctrl"], "key": "Q"}],
+    },
+}
 HIGHLIGHTS = {
     f"editor:toggle-highlight-{color}": [{"modifiers": ["Alt"], "key": key}]
-    for color, key in [("red", "1"), ("orange", "2"), ("yellow", "Q"),
-                       ("green", "A"), ("blue", "S"), ("purple", "Z")]
+    for color, key in zip(["red", "orange", "yellow", "green", "blue", "purple"], "ADSZCX")
 }
+HIGHLIGHTS["editor:toggle-highlight"] = [{"modifiers": ["Alt"], "key": "Q"}]
 
 
 def json_bytes(value):
@@ -494,6 +442,10 @@ def merge_hotkeys(raw, preset, replace_conflicts):
                     or any(not isinstance(mod, str) or mod not in {"Mod", "Ctrl", "Meta", "Alt", "Shift"}
                            for mod in binding["modifiers"])):
                 raise ValueError(f"Invalid key combination for {command}.")
+    if "superier-highlighter:remove-highlight" in preset:
+        current = {command: bindings for command, bindings in current.items()
+                   if not command.startswith("reader-highlighter-tags:")}
+
     def combination(binding):
         modifiers = {("Meta" if sys.platform == "darwin" else "Ctrl") if mod == "Mod" else mod
                      for mod in binding["modifiers"]}
@@ -536,37 +488,56 @@ def install(vault, only="all", replace_conflicts=False):
     if not config.is_dir():
         raise ValueError("Choose an existing vault containing .obsidian.")
     config = config.resolve()
-    if only not in {"all", "terminal", "git", "reader"}:
-        raise ValueError("Choose all, terminal, git or reader.")
-    selected = list(PLUGINS) if only == "all" else [{"terminal": "terminal", "git": "obsidian-git", "reader": "reader-highlighter-tags"}[only]]
+    if only not in {"all", "terminal", "git", "reader", "highlighter", "shortcuts"}:
+        raise ValueError("Choose all, terminal, git, highlighter or shortcuts.")
+    selected = (list(PLUGINS) if only == "all" else [] if only == "shortcuts" else
+                [{"terminal": "terminal", "git": "obsidian-git",
+                  "reader": "superier-highlighter", "highlighter": "superier-highlighter"}[only]])
     enabled_path = config / "community-plugins.json"
     enabled = json.loads(enabled_path.read_bytes()) if enabled_path.exists() else []
     if not isinstance(enabled, list) or any(not isinstance(item, str) for item in enabled):
         raise ValueError("community-plugins.json must contain a list of plugin IDs.")
     updates = {}
-    preset = dict(HIGHLIGHTS) if only == "all" else {}
-    for plugin in selected:
+    preset = dict(HIGHLIGHTS) if only in {"all", "reader", "highlighter", "shortcuts"} else {}
+    for plugin in (PLUGINS if only == "shortcuts" else selected):
         preset.update(PLUGIN_HOTKEYS.get(plugin, {}))
     if preset:
         hotkeys = config / "hotkeys.json"
         updates[hotkeys] = merge_hotkeys(hotkeys.read_bytes() if hotkeys.exists() else b"{}", preset, replace_conflicts)
     # Finish every download and validate every manifest before writing anything.
     for plugin in selected:
-        repo, version = PLUGINS[plugin]
-        base = f"https://github.com/{repo}/releases/download/{version}/"
-        manifest = download(base + "manifest.json")
+        repo = PLUGINS[plugin]
+        release = json.loads(download(f"https://api.github.com/repos/{repo}/releases/latest"))
+        tag = release.get("tag_name")
+        if not isinstance(tag, str) or not tag or release.get("draft") or release.get("prerelease"):
+            raise ValueError(f"No stable release is available for {plugin}.")
+        version = tag.removeprefix("v")
+        assets = {asset["name"]: asset for asset in release.get("assets", [])}
+        if not {"manifest.json", "main.js", "styles.css"}.issubset(assets):
+            raise ValueError(f"The latest release is missing required files for {plugin}.")
+        base = f"https://github.com/{repo}/releases/download/{quote(tag, safe='')}/"
+        def verified_download(name):
+            content = download(base + name)
+            digest = assets[name].get("digest")
+            if digest and digest != "sha256:" + hashlib.sha256(content).hexdigest():
+                raise ValueError(f"Checksum mismatch: {plugin}/{name}.")
+            return content
+        manifest = verified_download("manifest.json")
         metadata = json.loads(manifest)
         if not isinstance(metadata, dict) or metadata.get("id") != plugin or metadata.get("version") != version:
             raise ValueError(f"Unexpected release manifest for {plugin}.")
         directory = config / "plugins" / plugin
         updates[directory / "manifest.json"] = manifest
         for name in ["main.js", "styles.css"]:
-            updates[directory / name] = download(base + name)
+            updates[directory / name] = verified_download(name)
         updates[directory / "data.json"] = json_bytes(SETTINGS[plugin])
         if plugin not in enabled:
             enabled.append(plugin)
     # Enable plugins only after their files and settings have been written.
-    updates[enabled_path] = json_bytes(enabled)
+    if selected:
+        if "superier-highlighter" in selected:
+            enabled = [plugin for plugin in enabled if plugin != "reader-highlighter-tags"]
+        updates[enabled_path] = json_bytes(enabled)
     before = {}
     for path in updates:
         path.resolve().relative_to(config)
@@ -610,7 +581,7 @@ def install(vault, only="all", replace_conflicts=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("vault", nargs="?", type=Path, default=Path.cwd(), help="Vault root; defaults to current directory.")
-    parser.add_argument("--only", choices=["all", "terminal", "git", "reader"], default="all")
+    parser.add_argument("--only", choices=["all", "terminal", "git", "reader", "highlighter", "shortcuts"], default="all")
     parser.add_argument("--replace-conflicts", action="store_true", help="Reassign conflicting custom shortcuts.")
     args = parser.parse_args()
     try:

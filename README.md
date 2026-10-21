@@ -1,24 +1,26 @@
+[KOREAN](README.ko.md)
+
 # Obsidian Vault Init
 
-One-line installers for saved Terminal, Git, Reader Highlighter Tags and shortcut settings.
+Install the latest stable Terminal, Git and Superier Highlighter releases with saved personal settings and shortcuts.
 
-macOS · Obsidian 1.14+ · Python 3.9+ · Git
+macOS · Obsidian · Python 3.9+ · Git
 
 **Quit Obsidian and run from your vault folder. Reopen Obsidian afterward.** Allow community plugins if prompted.
 
-[KOREAN](README.ko.md)
-
 ## Install
 
-Terminal + Git + Reader Highlighter Tags + all saved shortcuts:
+Terminal + Git + Superier Highlighter + all saved shortcuts:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 -
 ```
 
+Every plugin install queries GitHub for the latest stable release. Preview releases are excluded. Updates happen when you run the script; it does not install a background updater. All downloads and manifests are checked before any vault files are changed; available GitHub asset checksums are verified. A failed lookup or download leaves the vault unchanged.
+
 ### Terminal
 
-[Terminal 3.29.0](https://github.com/polyipseity/obsidian-terminal) with the saved settings and macOS integrated zsh profile.
+[Terminal](https://github.com/polyipseity/obsidian-terminal) with saved settings and the macOS integrated zsh profile.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only terminal
@@ -28,45 +30,46 @@ Shortcuts: **Option + T** or **Cmd + Shift + H** to open, **Option + F** to find
 
 ### Git
 
-[Git 2.42.0](https://github.com/Vinzent03/obsidian-git) with the saved automatic commit-and-sync settings. Git, your vault's repository, remote and authentication must already be configured.
+[Git](https://github.com/Vinzent03/obsidian-git) with saved automatic commit-and-sync settings. Git, your vault's repository, remote and authentication must already be configured.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only git
 ```
 
-### Reader Highlighter Tags
+### Superier Highlighter
 
-[Reader Highlighter Tags 2.0.0](https://github.com/DuckTapeKiller/obsidian-reader-highlighter-tags), using the current default settings.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only reader
-```
-
-Reading view shortcuts: **Ctrl + 1** red, **Ctrl + Q** yellow, **Ctrl + A** green, **Ctrl + Z** purple.
-
-### Highlight shortcuts
-
-The original [Basic Color Highlighter](https://github.com/owjxyz/Basic-Color-Highlighter) command:
+[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter) with default plugin settings and the saved reading and editing shortcuts below. This replaces Reader Highlighter Tags in the enabled plugin list and removes its obsolete shortcut bindings; its files remain intact. The older `--only reader` option is an alias for this setup.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/owjxyz/Basic-Color-Highlighter/main/apply.py | python3 -
+curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only highlighter
 ```
 
-| Color | macOS | Windows / Linux | Markdown |
-| --- | --- | --- | --- |
-| Red | Option + 1 | Alt + 1 | `==🔴text==` |
-| Orange | Option + 2 | Alt + 2 | `==🟠text==` |
-| Yellow | Option + Q | Alt + Q | `==🟡text==` |
-| Green | Option + A | Alt + A | `==🟢text==` |
-| Blue | Option + S | Alt + S | `==🔵text==` |
-| Purple | Option + Z | Alt + Z | `==🟣text==` |
+### Personal shortcuts only
 
-Select text and press the shortcut.
+Apply all saved shortcuts, including Terminal, without downloading or enabling plugins:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only shortcuts
+```
+
+| Colour / action                   | Editing    | Reading (Superier Highlighter) |
+| --------------------------------- | ---------- | ------------------------------ |
+| Red                               | Option + A | Ctrl + A                       |
+| Orange                            | Option + D | Ctrl + D                       |
+| Yellow                            | Option + S | Ctrl + S                       |
+| Green                             | Option + Z | Ctrl + Z                       |
+| Blue                              | Option + C | Ctrl + C                       |
+| Purple                            | Option + X | Ctrl + X                       |
+| Toggle default / remove highlight | Option + Q | Ctrl + Q                       |
+
+On Windows / Linux, use Alt instead of Option. The editing colour commands require the existing Basic Color Highlighter customization; this script assigns their shortcuts. Reading shortcuts use Superier Highlighter. Repeating a reading colour shortcut removes the containing highlight and its colour marker.
+
+The standalone Superier Highlighter installer does not configure shortcuts. This repository owns the personal bindings.
 
 ## Options
 
 - **Another vault:** append `"/path/to/vault"` after `python3 -`.
 - **Shortcut conflicts:** append `--replace-conflicts` to reassign conflicting custom shortcuts.
-- **Backup:** replaced files are saved under `.obsidian/vault-setup-backups/`. The original highlight-only command uses `.obsidian/hotkeys.json.*.bak`.
+- **Backup:** replaced files are saved under `.obsidian/vault-setup-backups/`.
 
-Plugin installers download the listed versions from their official releases, replace the selected plugins' settings and add them to the enabled plugin list. Other plugins and notes are preserved. The default target is the current folder, which must contain `.obsidian`.
+Plugin installation replaces the selected plugins' saved settings and enables them. Other plugins and notes are preserved, apart from the legacy highlighter migration described above. Shortcut-only setup preserves plugin files and activation. The default target is the current folder, which must contain `.obsidian`.
