@@ -1,5 +1,3 @@
-> [KOREAN](README.ko.md)
-
 # Obsidian Vault Init
 
 One-line installers for saved Terminal, Git and highlight settings.
@@ -7,6 +5,8 @@ One-line installers for saved Terminal, Git and highlight settings.
 macOS · Obsidian 1.14+ · Python 3.9+ · Git
 
 **Quit Obsidian and run from your vault folder. Reopen Obsidian afterward.** Allow community plugins if prompted.
+
+[KOREAN](README.ko.md)
 
 ## Install all
 
