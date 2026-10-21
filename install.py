@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install saved Terminal/Git settings and highlight hotkeys into an existing vault."""
+"""Install saved plugin settings and shortcuts into an existing Obsidian vault."""
 import argparse
 from datetime import datetime
 import json
@@ -382,12 +382,83 @@ SETTINGS = json.loads(r'''{
       "lastShownAuthorDisplay": "initials",
       "lastShownDateTimeFormatOptions": "date"
     }
-  }
+  },
+  "reader-highlighter-tags": {}
 }''')
 PLUGINS = {
     "terminal": ("polyipseity/obsidian-terminal", "3.29.0"),
     "obsidian-git": ("Vinzent03/obsidian-git", "2.42.0"),
+    "reader-highlighter-tags": ("DuckTapeKiller/obsidian-reader-highlighter-tags", "2.0.0"),
 }
+PLUGIN_HOTKEYS = json.loads(r'''{
+  "terminal": {
+    "terminal:find-in-terminal": [
+      {
+        "modifiers": [
+          "Alt"
+        ],
+        "key": "F"
+      }
+    ],
+    "terminal:close-terminal": [
+      {
+        "modifiers": [
+          "Alt"
+        ],
+        "key": "W"
+      }
+    ],
+    "terminal:open-terminal.integrated.root": [
+      {
+        "key": "H",
+        "modifiers": [
+          "Mod",
+          "Shift"
+        ]
+      },
+      {
+        "modifiers": [
+          "Alt"
+        ],
+        "key": "T"
+      }
+    ]
+  },
+  "reader-highlighter-tags": {
+    "reader-highlighter-tags:apply-color-1": [
+      {
+        "modifiers": [
+          "Ctrl"
+        ],
+        "key": "1"
+      }
+    ],
+    "reader-highlighter-tags:apply-color-3": [
+      {
+        "modifiers": [
+          "Ctrl"
+        ],
+        "key": "Q"
+      }
+    ],
+    "reader-highlighter-tags:apply-color-4": [
+      {
+        "modifiers": [
+          "Ctrl"
+        ],
+        "key": "A"
+      }
+    ],
+    "reader-highlighter-tags:apply-color-6": [
+      {
+        "modifiers": [
+          "Ctrl"
+        ],
+        "key": "Z"
+      }
+    ]
+  }
+}''')
 HIGHLIGHTS = {
     f"editor:toggle-highlight-{color}": [{"modifiers": ["Alt"], "key": key}]
     for color, key in [("red", "1"), ("orange", "2"), ("yellow", "Q"),
@@ -408,7 +479,7 @@ def download(url):
     return content
 
 
-def highlight_hotkeys(raw, replace_conflicts):
+def merge_hotkeys(raw, preset, replace_conflicts):
     # Reuse Basic Color Highlighter's validation and merge rules.
     current = json.loads(raw)
     if not isinstance(current, dict):
@@ -423,18 +494,23 @@ def highlight_hotkeys(raw, replace_conflicts):
                     or any(not isinstance(mod, str) or mod not in {"Mod", "Ctrl", "Meta", "Alt", "Shift"}
                            for mod in binding["modifiers"])):
                 raise ValueError(f"Invalid key combination for {command}.")
-    reserved = {binding[0]["key"] for binding in HIGHLIGHTS.values()}
+    def combination(binding):
+        modifiers = {("Meta" if sys.platform == "darwin" else "Ctrl") if mod == "Mod" else mod
+                     for mod in binding["modifiers"]}
+        return frozenset(modifiers), binding["key"].upper()
+
+    reserved = {combination(binding) for bindings in preset.values() for binding in bindings}
     merged = dict(current)
     for command, bindings in current.items():
-        if command in HIGHLIGHTS:
+        if command in preset:
             continue
         remaining = [binding for binding in bindings
-                     if not (set(binding["modifiers"]) == {"Alt"} and binding["key"].upper() in reserved)]
+                     if combination(binding) not in reserved]
         if len(remaining) != len(bindings):
             if not replace_conflicts:
                 raise ValueError(f"Hotkey conflict: {command}. Use --replace-conflicts to reassign it.")
             merged[command] = remaining
-    merged.update(HIGHLIGHTS)
+    merged.update(preset)
     return json_bytes(merged)
 
 
@@ -460,17 +536,20 @@ def install(vault, only="all", replace_conflicts=False):
     if not config.is_dir():
         raise ValueError("Choose an existing vault containing .obsidian.")
     config = config.resolve()
-    if only not in {"all", "terminal", "git"}:
-        raise ValueError("Choose all, terminal or git.")
-    selected = ["terminal", "obsidian-git"] if only == "all" else ["obsidian-git" if only == "git" else "terminal"]
+    if only not in {"all", "terminal", "git", "reader"}:
+        raise ValueError("Choose all, terminal, git or reader.")
+    selected = list(PLUGINS) if only == "all" else [{"terminal": "terminal", "git": "obsidian-git", "reader": "reader-highlighter-tags"}[only]]
     enabled_path = config / "community-plugins.json"
     enabled = json.loads(enabled_path.read_bytes()) if enabled_path.exists() else []
     if not isinstance(enabled, list) or any(not isinstance(item, str) for item in enabled):
         raise ValueError("community-plugins.json must contain a list of plugin IDs.")
     updates = {}
-    if only == "all":
+    preset = dict(HIGHLIGHTS) if only == "all" else {}
+    for plugin in selected:
+        preset.update(PLUGIN_HOTKEYS.get(plugin, {}))
+    if preset:
         hotkeys = config / "hotkeys.json"
-        updates[hotkeys] = highlight_hotkeys(hotkeys.read_bytes() if hotkeys.exists() else b"{}", replace_conflicts)
+        updates[hotkeys] = merge_hotkeys(hotkeys.read_bytes() if hotkeys.exists() else b"{}", preset, replace_conflicts)
     # Finish every download and validate every manifest before writing anything.
     for plugin in selected:
         repo, version = PLUGINS[plugin]
@@ -531,8 +610,8 @@ def install(vault, only="all", replace_conflicts=False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("vault", nargs="?", type=Path, default=Path.cwd(), help="Vault root; defaults to current directory.")
-    parser.add_argument("--only", choices=["all", "terminal", "git"], default="all")
-    parser.add_argument("--replace-conflicts", action="store_true", help="Reassign conflicting custom highlight shortcuts.")
+    parser.add_argument("--only", choices=["all", "terminal", "git", "reader"], default="all")
+    parser.add_argument("--replace-conflicts", action="store_true", help="Reassign conflicting custom shortcuts.")
     args = parser.parse_args()
     try:
         install(args.vault, args.only, args.replace_conflicts)
