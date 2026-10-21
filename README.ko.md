@@ -6,7 +6,7 @@ macOS · Obsidian 1.14 이상 · Python 3.9 이상 · Git
 
 **Obsidian을 종료하고 대상 vault 폴더에서 실행한 뒤, Obsidian을 다시 여세요.** 커뮤니티 플러그인 허용 안내가 나오면 허용합니다.
 
-## 전체 설치
+## Install
 
 Terminal + Git + Reader Highlighter Tags + 저장된 모든 단축키:
 
@@ -14,7 +14,7 @@ Terminal + Git + Reader Highlighter Tags + 저장된 모든 단축키:
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 -
 ```
 
-## Terminal
+### Terminal
 
 [Terminal 3.29.0](https://github.com/polyipseity/obsidian-terminal)과 저장된 설정, macOS 내장 zsh 프로필을 적용합니다.
 
@@ -24,7 +24,7 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 
 단축키: 열기 **Option + T** 또는 **Cmd + Shift + H**, 검색 **Option + F**, 닫기 **Option + W**.
 
-## Git
+### Git
 
 [Git 2.42.0](https://github.com/Vinzent03/obsidian-git)과 저장된 자동 커밋·동기화 설정을 적용합니다. Git 설치, vault의 Git 저장소·원격 주소·인증은 미리 설정되어 있어야 합니다.
 
@@ -32,7 +32,7 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only git
 ```
 
-## Reader Highlighter Tags
+### Reader Highlighter Tags
 
 [Reader Highlighter Tags 2.0.0](https://github.com/DuckTapeKiller/obsidian-reader-highlighter-tags)과 현재 사용 중인 기본 설정을 적용합니다.
 
@@ -42,7 +42,7 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 
 읽기 보기 단축키: 빨강 **Ctrl + 1**, 노랑 **Ctrl + Q**, 초록 **Ctrl + A**, 보라 **Ctrl + Z**.
 
-## 하이라이트 단축키
+### 하이라이트 단축키
 
 기존 [Basic Color Highlighter](https://github.com/owjxyz/Basic-Color-Highlighter) 명령입니다.
 
