@@ -58,17 +58,20 @@ with TemporaryDirectory() as folder:
     assert (git_settings["autoSaveInterval"], git_settings["autoPushInterval"], git_settings["autoPullInterval"]) == (10, 60, 60)
     keys = json.loads((config / "hotkeys.json").read_text())
     assert keys["app:open-settings"] == [{"modifiers": ["Mod"], "key": ","}]
-    for color, key in [("red", "A"), ("orange", "D"), ("yellow", "S"), ("green", "Z"), ("blue", "C"), ("purple", "X")]:
-        assert keys[f"editor:toggle-highlight-{color}"] == [{"modifiers": ["Alt"], "key": key}]
+    assert not any(command.startswith("editor:toggle-highlight") for command in keys)
     for color, key in [(1, "A"), (2, "D"), (3, "S"), (4, "Z"), (5, "C"), (6, "X")]:
-        assert keys[f"superier-highlighter:apply-color-{color}"] == [{"modifiers": ["Ctrl"], "key": key}]
+        assert keys[f"superier-highlighter:apply-color-{color}"] == [{"modifiers": ["Alt"], "key": key}]
     assert keys["terminal:find-in-terminal"] == [{"modifiers": ["Alt"], "key": "F"}]
     assert keys["terminal:close-terminal"] == [{"modifiers": ["Alt"], "key": "W"}]
     assert keys["terminal:open-terminal.integrated.root"] == [
         {"key": "H", "modifiers": ["Mod", "Shift"]},
         {"modifiers": ["Alt"], "key": "T"},
     ]
-    assert json.loads((config / "plugins/superier-highlighter/data.json").read_text()) == {}
+    highlighter = json.loads((config / "plugins/superier-highlighter/data.json").read_text())
+    assert highlighter["toolbarPosition"] == "text"
+    assert highlighter["showTooltips"] is False
+    assert highlighter["enableSmartParagraphSelection"] is False
+    assert [item["color"] for item in highlighter["semanticColors"]] == ["red", "orange", "yellow", "green", "blue", "purple"]
     assert (vault / "note.md").read_text() == "Do not touch this note."
     before = snapshot(vault)
     assert setup.install(vault) is None
@@ -90,8 +93,8 @@ with TemporaryDirectory() as folder:
             assert not (single / ".obsidian/hotkeys.json").exists()
         else:
             scoped = json.loads((single / ".obsidian/hotkeys.json").read_text())
-            assert all(command.startswith((wanted + ":", "editor:toggle-highlight")) for command in scoped)
-            assert len(scoped) == (3 if only == "terminal" else 14)
+            assert all(command.startswith(wanted + ":") for command in scoped)
+            assert len(scoped) == (3 if only == "terminal" else 7)
 
     shortcuts = root / "shortcuts"
     (shortcuts / ".obsidian").mkdir(parents=True)
@@ -102,10 +105,10 @@ with TemporaryDirectory() as folder:
     assert not (shortcuts / ".obsidian/plugins").exists()
     assert not (shortcuts / ".obsidian/community-plugins.json").exists()
     saved = json.loads((shortcuts / ".obsidian/hotkeys.json").read_text())
-    assert saved["superier-highlighter:apply-color-5"] == [{"modifiers": ["Ctrl"], "key": "C"}]
-    assert saved["superier-highlighter:apply-color-2"] == [{"modifiers": ["Ctrl"], "key": "D"}]
-    assert saved["superier-highlighter:remove-highlight"] == [{"modifiers": ["Ctrl"], "key": "Q"}]
-    assert saved["editor:toggle-highlight"] == [{"modifiers": ["Alt"], "key": "Q"}]
+    assert saved["superier-highlighter:apply-color-5"] == [{"modifiers": ["Alt"], "key": "C"}]
+    assert saved["superier-highlighter:apply-color-2"] == [{"modifiers": ["Alt"], "key": "D"}]
+    assert saved["superier-highlighter:remove-highlight"] == [{"modifiers": ["Alt"], "key": "Q"}]
+    assert "editor:toggle-highlight" not in saved
     setup.download = fixture_download
 
     # Retiring the old plugin also retires its shortcut bindings, preserving other settings.
@@ -115,6 +118,9 @@ with TemporaryDirectory() as folder:
     (migration_config / "community-plugins.json").write_text('["other", "reader-highlighter-tags"]')
     (migration_config / "hotkeys.json").write_text(json.dumps({
         "reader-highlighter-tags:apply-color-1": [{"modifiers": ["Ctrl"], "key": "A"}],
+        "editor:toggle-highlight-red": [{"modifiers": ["Alt"], "key": "A"}],
+        "editor:toggle-highlight": [{"modifiers": ["Alt"], "key": "Q"}],
+        "editor:toggle-bold": [{"modifiers": ["Mod"], "key": "B"}],
         "other:command": [{"modifiers": ["Shift"], "key": "Y"}]
     }))
     setup.install(migration, only="reader")
@@ -122,6 +128,8 @@ with TemporaryDirectory() as folder:
     migrated = json.loads((migration_config / "hotkeys.json").read_text())
     assert not any(command.startswith("reader-highlighter-tags:") for command in migrated)
     assert "other:command" in migrated
+    assert "editor:toggle-bold" in migrated
+    assert not any(command.startswith("editor:toggle-highlight") for command in migrated)
 
     # Bad settings, conflicts and download errors must not make partial installs.
     failing = root / "failing"
@@ -150,8 +158,8 @@ with TemporaryDirectory() as folder:
     setup.install(failing, replace_conflicts=True)
     assert json.loads((failing_config / "hotkeys.json").read_text())["other"] == []
 
-    # Collision checks must cover Terminal and Reader modifiers, not just Alt+colors.
-    for only, modifier, key in [("terminal", "Alt", "W"), ("highlighter", "Ctrl", "Q")]:
+    # Collision checks must cover both Terminal and highlighter shortcuts.
+    for only, modifier, key in [("terminal", "Alt", "W"), ("highlighter", "Alt", "Q")]:
         (failing_config / "hotkeys.json").write_text(json.dumps({
             "unrelated": [{"modifiers": [modifier], "key": key}, {"modifiers": ["Shift"], "key": "X"}]
         }))

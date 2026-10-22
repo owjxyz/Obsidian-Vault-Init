@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 
 ### Superier Highlighter
 
-[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter)의 기본 플러그인 설정과 아래의 읽기·편집 단축키를 적용합니다. 기존 Reader Highlighter Tags는 활성화 목록에서 제외하고 해당 단축키를 정리하며 파일은 보존합니다. 이전 `--only reader` 옵션도 같은 동작으로 유지합니다.
+[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter)에 현재 CMEF vault 설정과 아래의 편집·읽기 공통 단축키를 적용합니다. 툴바는 텍스트 옆에 표시하고, 6색 팔레트와 내비게이터는 활성화하며, 툴팁과 스마트 문단 선택은 비활성화합니다. 기존 Reader Highlighter Tags는 활성화 목록에서 제외하고 해당 단축키와 이전 Basic Color Highlighter 편집 단축키를 정리하며 플러그인 파일은 보존합니다. 이전 `--only reader` 옵션도 같은 동작으로 유지합니다.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only highlighter
@@ -52,17 +52,17 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only shortcuts
 ```
 
-| 색상 / 동작                      | 편집 보기  | 읽기 보기 (Superier Highlighter) |
-| -------------------------------- | ---------- | -------------------------------- |
-| 빨강                             | Option + A | Ctrl + A                         |
-| 주황                             | Option + D | Ctrl + D                         |
-| 노랑                             | Option + S | Ctrl + S                         |
-| 초록                             | Option + Z | Ctrl + Z                         |
-| 파랑                             | Option + C | Ctrl + C                         |
-| 보라                             | Option + X | Ctrl + X                         |
-| 기본 강조 전환 / 하이라이트 제거 | Option + Q | Ctrl + Q                         |
+| 색상 / 동작 | 편집·읽기 공통 |
+| --- | --- |
+| 빨강 | Option + A |
+| 주황 | Option + D |
+| 노랑 | Option + S |
+| 초록 | Option + Z |
+| 파랑 | Option + C |
+| 보라 | Option + X |
+| 하이라이트 제거 | Option + Q |
 
-Windows / Linux에서는 Option 대신 Alt를 사용합니다. 편집 보기의 색상 명령에는 기존 Basic Color Highlighter 사용자 설정이 필요하며, 이 스크립트는 해당 단축키를 배정합니다. 읽기 보기 단축키는 Superier Highlighter에서 동작합니다. 읽기 보기의 색상 단축키를 다시 누르면 선택 범위를 포함하는 하이라이트와 색상 표시를 제거합니다.
+Windows / Linux에서는 Option 대신 Alt를 사용합니다. 편집·읽기 보기 모두 Superier Highlighter에서 처리하며, 이전 읽기 보기의 Ctrl 단축키를 교체합니다. 색상 단축키를 다시 누르면 선택 범위를 포함하는 하이라이트와 색상 표시를 제거합니다.
 
 Superier Highlighter 단독 설치 명령은 단축키를 설정하지 않습니다. 개인 단축키는 이 저장소에서 관리합니다.
 

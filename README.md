@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 
 ### Superier Highlighter
 
-[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter) with default plugin settings and the saved reading and editing shortcuts below. This replaces Reader Highlighter Tags in the enabled plugin list and removes its obsolete shortcut bindings; its files remain intact. The older `--only reader` option is an alias for this setup.
+[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter) with the current CMEF vault settings and the shared editing and reading shortcuts below. The toolbar appears by the text, the six-colour palette and navigator are enabled, and tooltips and smart paragraph selection are disabled. This replaces Reader Highlighter Tags in the enabled plugin list and removes its obsolete shortcut bindings and the former Basic Color Highlighter editing bindings; plugin files remain intact. The older `--only reader` option is an alias for this setup.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only highlighter
@@ -52,17 +52,17 @@ Apply all saved shortcuts, including Terminal, without downloading or enabling p
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only shortcuts
 ```
 
-| Colour / action                   | Editing    | Reading (Superier Highlighter) |
-| --------------------------------- | ---------- | ------------------------------ |
-| Red                               | Option + A | Ctrl + A                       |
-| Orange                            | Option + D | Ctrl + D                       |
-| Yellow                            | Option + S | Ctrl + S                       |
-| Green                             | Option + Z | Ctrl + Z                       |
-| Blue                              | Option + C | Ctrl + C                       |
-| Purple                            | Option + X | Ctrl + X                       |
-| Toggle default / remove highlight | Option + Q | Ctrl + Q                       |
+| Colour / action | Editing and reading |
+| --- | --- |
+| Red | Option + A |
+| Orange | Option + D |
+| Yellow | Option + S |
+| Green | Option + Z |
+| Blue | Option + C |
+| Purple | Option + X |
+| Remove highlight | Option + Q |
 
-On Windows / Linux, use Alt instead of Option. The editing colour commands require the existing Basic Color Highlighter customization; this script assigns their shortcuts. Reading shortcuts use Superier Highlighter. Repeating a reading colour shortcut removes the containing highlight and its colour marker.
+On Windows / Linux, use Alt instead of Option. Superier Highlighter handles both editing and reading. The former Ctrl reading bindings are replaced. Repeating a colour shortcut removes the containing highlight and its colour marker.
 
 The standalone Superier Highlighter installer does not configure shortcuts. This repository owns the personal bindings.
 

@@ -385,7 +385,44 @@ SETTINGS = json.loads(r'''{
       "lastShownDateTimeFormatOptions": "date"
     }
   },
-  "superier-highlighter": {}
+  "superier-highlighter": {
+    "toolbarPosition": "text",
+    "defaultHighlightColor": "",
+    "enableHaptics": true,
+    "showRemoveButton": true,
+    "enableColorPalette": true,
+    "showOnlyAssignedColors": true,
+    "semanticColors": [
+      {
+        "color": "red",
+        "meaning": ""
+      },
+      {
+        "color": "orange",
+        "meaning": ""
+      },
+      {
+        "color": "yellow",
+        "meaning": ""
+      },
+      {
+        "color": "green",
+        "meaning": ""
+      },
+      {
+        "color": "blue",
+        "meaning": ""
+      },
+      {
+        "color": "purple",
+        "meaning": ""
+      }
+    ],
+    "showNavigatorButton": true,
+    "showTooltips": false,
+    "enableSmartParagraphSelection": false,
+    "learnedNormRules": []
+  }
 }''')
 PLUGINS = {
     "terminal": "polyipseity/obsidian-terminal",
@@ -402,16 +439,15 @@ PLUGIN_HOTKEYS = {
         ],
     },
     "superier-highlighter": {
-        **{f"superier-highlighter:apply-color-{index}": [{"modifiers": ["Ctrl"], "key": key}]
+        **{f"superier-highlighter:apply-color-{index}": [{"modifiers": ["Alt"], "key": key}]
            for index, key in enumerate("ADSZCX", 1)},
-        "superier-highlighter:remove-highlight": [{"modifiers": ["Ctrl"], "key": "Q"}],
+        "superier-highlighter:remove-highlight": [{"modifiers": ["Alt"], "key": "Q"}],
     },
 }
-HIGHLIGHTS = {
-    f"editor:toggle-highlight-{color}": [{"modifiers": ["Alt"], "key": key}]
-    for color, key in zip(["red", "orange", "yellow", "green", "blue", "purple"], "ADSZCX")
+LEGACY_HIGHLIGHTS = {"editor:toggle-highlight"} | {
+    f"editor:toggle-highlight-{color}"
+    for color in ["red", "orange", "yellow", "green", "blue", "purple"]
 }
-HIGHLIGHTS["editor:toggle-highlight"] = [{"modifiers": ["Alt"], "key": "Q"}]
 
 
 def json_bytes(value):
@@ -444,7 +480,7 @@ def merge_hotkeys(raw, preset, replace_conflicts):
                 raise ValueError(f"Invalid key combination for {command}.")
     if "superier-highlighter:remove-highlight" in preset:
         current = {command: bindings for command, bindings in current.items()
-                   if not command.startswith("reader-highlighter-tags:")}
+                   if not command.startswith("reader-highlighter-tags:") and command not in LEGACY_HIGHLIGHTS}
 
     def combination(binding):
         modifiers = {("Meta" if sys.platform == "darwin" else "Ctrl") if mod == "Mod" else mod
@@ -498,7 +534,7 @@ def install(vault, only="all", replace_conflicts=False):
     if not isinstance(enabled, list) or any(not isinstance(item, str) for item in enabled):
         raise ValueError("community-plugins.json must contain a list of plugin IDs.")
     updates = {}
-    preset = dict(HIGHLIGHTS) if only in {"all", "reader", "highlighter", "shortcuts"} else {}
+    preset = {}
     for plugin in (PLUGINS if only == "shortcuts" else selected):
         preset.update(PLUGIN_HOTKEYS.get(plugin, {}))
     if preset:
