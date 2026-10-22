@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 
 ### Superier Highlighter
 
-[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter)에 현재 CMEF vault 설정과 아래의 편집·읽기 공통 단축키를 적용합니다. 툴바는 텍스트 옆에 표시하고, 6색 팔레트와 내비게이터는 활성화하며, 툴팁과 스마트 문단 선택은 비활성화합니다. 기존 Reader Highlighter Tags는 활성화 목록에서 제외하고 해당 단축키와 이전 Basic Color Highlighter 편집 단축키를 정리하며 플러그인 파일은 보존합니다. 이전 `--only reader` 옵션도 같은 동작으로 유지합니다.
+[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter)에 저장된 설정과 편집·읽기 공통 단축키를 적용합니다. 툴바는 텍스트 옆에 표시하고, 6색 팔레트와 내비게이터는 활성화하며, 툴팁과 스마트 문단 선택은 비활성화합니다.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only highlighter
@@ -62,14 +62,13 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 | 보라 | Option + X |
 | 하이라이트 제거 | Option + Q |
 
-Windows / Linux에서는 Option 대신 Alt를 사용합니다. 편집·읽기 보기 모두 Superier Highlighter에서 처리하며, 이전 읽기 보기의 Ctrl 단축키를 교체합니다. 색상 단축키를 다시 누르면 선택 범위를 포함하는 하이라이트와 색상 표시를 제거합니다.
-
-Superier Highlighter 단독 설치 명령은 단축키를 설정하지 않습니다. 개인 단축키는 이 저장소에서 관리합니다.
+Windows / Linux에서는 Option 대신 Alt를 사용합니다. 편집·읽기 보기 모두 Superier Highlighter에서 처리합니다. 색상 단축키를 다시 누르면 선택 범위를 포함하는 하이라이트와 색상 표시를 제거합니다.
 
 ## 옵션
 
 - **다른 vault:** `python3 -` 뒤에 `"/대상/vault/경로"`를 추가합니다.
 - **단축키 충돌:** `--replace-conflicts`를 추가하면 충돌하는 기존 사용자 지정 키 배정을 해제합니다.
 - **백업:** 교체되는 파일은 `.obsidian/vault-setup-backups/`에 저장합니다.
+- **하이라이터 설정:** Reader Highlighter Tags를 비활성화하고 해당 단축키와 `editor:toggle-highlight` 기본·색상별 단축키를 제거합니다.
 
-플러그인을 설치하면 선택한 플러그인의 저장된 설정을 교체하고 활성화 목록에 추가합니다. 위의 기존 하이라이터 전환을 제외한 다른 플러그인과 노트는 보존합니다. 단축키만 적용하면 플러그인 파일과 활성화 상태를 보존합니다. 경로를 생략하면 현재 폴더에 적용하며, `.obsidian` 폴더가 있어야 합니다.
+플러그인을 설치하면 선택한 플러그인의 저장된 설정을 교체하고 활성화 목록에 추가합니다. 노트와 그 외 플러그인의 설정은 보존합니다. 단축키만 적용하면 플러그인 파일과 활성화 상태를 보존합니다. 경로를 생략하면 현재 폴더에 적용하며, `.obsidian` 폴더가 있어야 합니다.

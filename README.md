@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 
 ### Superier Highlighter
 
-[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter) with the current CMEF vault settings and the shared editing and reading shortcuts below. The toolbar appears by the text, the six-colour palette and navigator are enabled, and tooltips and smart paragraph selection are disabled. This replaces Reader Highlighter Tags in the enabled plugin list and removes its obsolete shortcut bindings and the former Basic Color Highlighter editing bindings; plugin files remain intact. The older `--only reader` option is an alias for this setup.
+[Superier Highlighter](https://github.com/owjxyz/Obsidian-Superier-Highlighter) with saved settings and shared editing and reading shortcuts. The toolbar appears by the text, the six-colour palette and navigator are enabled, and tooltips and smart paragraph selection are disabled.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/install.py | python3 - --only highlighter
@@ -62,14 +62,13 @@ curl -fsSL https://raw.githubusercontent.com/owjxyz/Obsidian-Vault-Init/main/ins
 | Purple | Option + X |
 | Remove highlight | Option + Q |
 
-On Windows / Linux, use Alt instead of Option. Superier Highlighter handles both editing and reading. The former Ctrl reading bindings are replaced. Repeating a colour shortcut removes the containing highlight and its colour marker.
-
-The standalone Superier Highlighter installer does not configure shortcuts. This repository owns the personal bindings.
+On Windows / Linux, use Alt instead of Option. Superier Highlighter handles both editing and reading. Repeating a colour shortcut removes the containing highlight and its colour marker.
 
 ## Options
 
 - **Another vault:** append `"/path/to/vault"` after `python3 -`.
 - **Shortcut conflicts:** append `--replace-conflicts` to reassign conflicting custom shortcuts.
 - **Backup:** replaced files are saved under `.obsidian/vault-setup-backups/`.
+- **Highlighter setup:** disables Reader Highlighter Tags and clears its shortcuts and the default and colour-specific `editor:toggle-highlight` shortcuts.
 
-Plugin installation replaces the selected plugins' saved settings and enables them. Other plugins and notes are preserved, apart from the legacy highlighter migration described above. Shortcut-only setup preserves plugin files and activation. The default target is the current folder, which must contain `.obsidian`.
+Plugin installation replaces the selected plugins' saved settings and enables them. Notes and unrelated plugin settings are preserved. Shortcut-only setup preserves plugin files and activation. The default target is the current folder, which must contain `.obsidian`.
